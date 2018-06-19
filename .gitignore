@@ -4,6 +4,4 @@
 .packages
 .pub/
 
-build/
-
 .flutter-plugins

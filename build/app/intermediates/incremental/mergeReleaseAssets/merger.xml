@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config=":path_provider"><source path="C:\Dev\flutter\apps\bible_app\build\path_provider\intermediates\bundles\release\assets"/></dataSet><dataSet config="main"><source path="C:\Dev\flutter\apps\bible_app\android\app\src\main\assets"/><source path="C:\Dev\flutter\apps\bible_app\build\app\generated\assets\shaders\release"/></dataSet><dataSet config="release"><source path="C:\Dev\flutter\apps\bible_app\android\app\src\release\assets"/></dataSet></merger>
