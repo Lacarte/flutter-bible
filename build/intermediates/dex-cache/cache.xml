@@ -8,7 +8,7 @@
         min-sdk-version="16"
         optimize="true"
         revision="26.0.2"
-        sha1="248ff445621fadad044ef3212c6209c1135143a6">
+        sha1="18c55b251294621be466e96e18631710114d3bc1">
         <dex dex="C:\Dev\flutter\apps\bible_app\build\app\intermediates\transforms\preDex\release\1.jar" />
     </item>
     <item

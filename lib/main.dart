@@ -101,20 +101,16 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       drawer: new Drawer(
         semanticLabel: "Books",
-        child: new ListView(
+        child: Column(
           children: <Widget>[
-            new Container(
-              child: new Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: new Text(
-                  'Books',
-                  style: Theme.of(context).textTheme.display1,
-                ),
+            Expanded(
+              flex: 1,
+              child: ListView.builder(
+                itemBuilder: (BuildContext context, int index) =>
+                    getBookPanel(this.books[index]),
+                itemCount: this.books.length,
               ),
-              decoration:
-                  new BoxDecoration(color: Theme.of(context).primaryColor),
             ),
-            this.getBookList(books)
           ],
         ),
       ),
@@ -123,70 +119,31 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void expandBook(int index, bool isExpanded) {}
 
-  Widget getBookList(books) {
+  /*  Widget getBookList() {
     var panel = new ExpansionPanelList(
         animationDuration: new Duration(seconds: 1),
         expansionCallback: (int index, bool isExpanded) {
           //TODO: make books expand on click anywhere on listing
           setState(() {
-            books[index].isExpanded = !isExpanded;
+            this.books[index].isExpanded = !isExpanded;
           });
         },
-        children: this
-            .books
-            .map(
-              (aBook) => new ExpansionPanel(
-                  headerBuilder: (BuildContext context, bool isExpanded) {
-                    return new Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: new Text(
-                        aBook.name,
-                        textAlign: TextAlign.left,
-                        style: Theme.of(context).textTheme.display1,
-                      ),
-                    );
-                  },
-                  body: new Container(
-                    height: 200.0,
-                    child: new GridView.count(
-                        crossAxisCount: 6,
-                        children: aBook.chapters
-                            .map(
-                              (chap) => new GestureDetector(
-                                    onTap: () => openChapter(chap, aBook),
-                                    child: new Padding(
-                                      padding: const EdgeInsets.all(1.0),
-                                      child: new DecoratedBox(
-                                        decoration: new BoxDecoration(
-                                            color:
-                                                Theme.of(context).buttonColor,
-                                            borderRadius:
-                                                new BorderRadius.circular(
-                                                    40.0)),
-                                        child: new FittedBox(
-                                          alignment: Alignment.center,
-                                          child: new Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: new Text(
-                                              chap.number.toString(),
-                                              textAlign: TextAlign.center,
-                                              style: Theme
-                                                  .of(context)
-                                                  .textTheme
-                                                  .button,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                            )
-                            .toList()),
-                  ),
-                  isExpanded: aBook.isExpanded),
-            )
-            .toList());
+        children: this.books.map((aBook) => getBookPanel(aBook)).toList());
     return panel;
+  } */
+
+  Widget getBookPanel(Book aBook) {
+    return ExpansionTile(
+      title: new Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: new Text(
+          aBook.name,
+          textAlign: TextAlign.left,
+          style: Theme.of(context).textTheme.display1,
+        ),
+      ),
+      children: <Widget>[getBookChapterPanels(aBook)],
+    );
   }
 
   showVerses(Chapter chapter, Book book) {
@@ -228,58 +185,124 @@ class _MyHomePageState extends State<MyHomePage> {
     showVerses(chapter, book);
   }
 
-  ExpansionPanel getBookPanel(Book book) {
-    return new ExpansionPanel(
-      headerBuilder: (BuildContext context, bool isExpanded) {
-        return new GestureDetector(
-          onTap: () => {},
-          child: new Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: new Text(
-              book.name,
-              textAlign: TextAlign.left,
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ),
-        );
-      },
-      body: new Container(
-        height: 200.0,
-        child: new GridView.count(
-            crossAxisCount: 6,
-            children: book.chapters
-                .map(
-                  (chap) => new GestureDetector(
-                        onTap: () => openChapter(chap, book),
-                        child: new Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: new DecoratedBox(
-                            decoration: new BoxDecoration(
-                                color: Theme.of(context).buttonColor,
-                                borderRadius: new BorderRadius.circular(40.0)),
-                            child: new FittedBox(
-                              alignment: Alignment.center,
-                              child: new Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: new Text(
-                                  chap.number.toString(),
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.button,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                )
-                .toList()),
-      ),
-      isExpanded: book.isExpanded,
-    );
-  }
-
   void _handlePress() {
     HapticFeedback.vibrate();
+  }
+
+  Widget getBookChapterPanels(Book aBook) {
+    return Wrap(
+      spacing: -25.0,
+      runSpacing: 10.0,
+      children: aBook.chapters
+          .map(
+            (chap) => ChapterCircle(
+                book: aBook,
+                chapter: chap,
+                context: context,
+                onTap: openChapter),
+          )
+          .toList(),
+    );
+    /*
+    return GridView.builder(
+        itemBuilder: (BuildContext context, int index) => new ChapterCircle(
+            book: aBook,
+            chapter: aBook.chapters[index],
+            context: context,
+            onTap: openChapter),
+        itemCount: aBook.chapters.length,
+        shrinkWrap: true,
+        padding: EdgeInsets.all(8.0),
+        gridDelegate:
+            new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5));
+     return Column(
+      children: this.getBookChapterColumns(aBook),
+    ); */
+
+    /* aBook.chapters
+                .map(
+                  (chap) => ChapterCircle(
+                      book: aBook,
+                      chapter: chap,
+                      context: context,
+                      onTap: openChapter),
+                )
+                .toList(), */
+  }
+
+  List<Row> getBookChapterColumns(Book aBook) {
+    List<Row> rows = new List<Row>();
+    for (var i = 0; i < aBook.chapters.length / 6; i++) {
+      int lowerBound = i * 6;
+      int upperBound = i * 6 + 6;
+      upperBound = upperBound > aBook.chapters.length - 1
+          ? aBook.chapters.length - 1
+          : upperBound;
+      Row aRow = new Row(
+          children: aBook.chapters
+              .sublist(lowerBound, upperBound)
+              .map(
+                (chap) => ChapterCircle(
+                    book: aBook,
+                    chapter: chap,
+                    context: context,
+                    onTap: openChapter),
+              )
+              .toList());
+      rows.add(aRow);
+    }
+    return rows;
+  }
+}
+
+class ChapterCircle extends StatelessWidget {
+  const ChapterCircle({
+    Key key,
+    @required this.context,
+    @required this.chapter,
+    @required this.book,
+    this.onTap,
+  }) : super(key: key);
+
+  final BuildContext context;
+  final Chapter chapter;
+  final Book book;
+  final void Function(Chapter chapter, Book book) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return new FlatButton(
+      child: Text(
+        chapter.number.toString(),
+        style: Theme.of(context).textTheme.display1,
+      ),
+      onPressed: () => onTap(chapter, book),
+      shape: CircleBorder(),
+      padding: EdgeInsets.all(10.0),
+    );
+/*
+    return new GestureDetector(
+      onTap: () => onTap(chapter, book),
+      child: new Padding(
+        padding: const EdgeInsets.all(6.0),
+        child: new DecoratedBox(
+          decoration: new BoxDecoration(
+              color: Theme.of(context).buttonColor,
+              borderRadius: new BorderRadius.circular(50.0)),
+          child: new FittedBox(
+            alignment: Alignment.center,
+            child: new Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: new Text(
+                chapter.number.toString(),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.button,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );*/
   }
 }
 
