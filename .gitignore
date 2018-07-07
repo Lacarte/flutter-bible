@@ -5,3 +5,5 @@
 .pub/
 
 .flutter-plugins
+./build/*
+!./build/app/outputs/apk

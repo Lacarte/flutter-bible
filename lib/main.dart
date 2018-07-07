@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
+import 'package:bible_app/Model/AppState.dart';
 import 'package:bible_app/Model/Chapter.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +11,7 @@ import 'package:flutter/services.dart' show HapticFeedback, rootBundle;
 
 import 'package:bible_app/Model/Book.dart';
 import 'package:bible_app/Designs/Designs.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() => runApp(new MyApp());
 
@@ -44,12 +48,35 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Book> books = new List<Book>();
   Widget body;
-  Book book;
-  Chapter chapter;
   LongPressGestureRecognizer _longPressRecognizer;
+  AppState appState = new AppState();
 
   Future<String> getFileData(String path) {
-    return rootBundle.loadString(path);
+    try {
+      var data = rootBundle.loadString(path);
+      return data;
+    } catch (e) {
+      return Future.value("");
+    }
+  }
+
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
+  Future<File> get _stateFile async {
+    final path = await _localPath;
+    return File('$path/state.json');
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    super.setState(fn);
+    if (appState.isValid()) {
+      this.saveCurrentBookAndChapter();
+    }
   }
 
   @override
@@ -62,11 +89,41 @@ class _MyHomePageState extends State<MyHomePage> {
       //var  books;C:\Dev\flutter\apps\bible_app\lib\Resources\ESV.xml
       getFileData('resources/esv.xml').then((String value) {
         importer = new BibleImporter(value);
-        setState(() {
-          this.books = importer.getAllBooks().toList();
-          showVerses(books.first.chapters.first, books.first);
-        });
+
+        this.books = importer.getAllBooks().toList();
+        try {
+          readCurrentBookAndChapter().then((String value) {
+            Map stateMap = json.decode(value);
+            appState = new AppState.fromJson(stateMap);
+            setState(() {
+              if (appState.currentBook == null) {
+                appState.currentBook = this.books.first;
+                appState.currentChapter = 1;
+              }
+              var currentBook = this.books.firstWhere(
+                  (b) => b.name == appState.currentBook.name,
+                  orElse: () => this.books.first);
+
+              showVerses(
+                  currentBook.getChapter(appState.currentChapter), currentBook);
+            });
+          });
+        } catch (e) {
+          setState(() {
+            if (appState.currentBook == null) {
+              appState.currentBook = this.books.first;
+              appState.currentChapter = 1;
+            }
+            var currentBook = this.books.firstWhere(
+                (b) => b.name == appState.currentBook.name,
+                orElse: () => this.books.first);
+
+            showVerses(
+                currentBook.getChapter(appState.currentChapter), currentBook);
+          });
+        }
       });
+
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
@@ -120,17 +177,17 @@ class _MyHomePageState extends State<MyHomePage> {
   void expandBook(int index, bool isExpanded) {}
 
   /*  Widget getBookList() {
-    var panel = new ExpansionPanelList(
-        animationDuration: new Duration(seconds: 1),
-        expansionCallback: (int index, bool isExpanded) {
-          //TODO: make books expand on click anywhere on listing
-          setState(() {
-            this.books[index].isExpanded = !isExpanded;
-          });
-        },
-        children: this.books.map((aBook) => getBookPanel(aBook)).toList());
-    return panel;
-  } */
+        var panel = new ExpansionPanelList(
+            animationDuration: new Duration(seconds: 1),
+            expansionCallback: (int index, bool isExpanded) {
+              //TODO: make books expand on click anywhere on listing
+              setState(() {
+                this.books[index].isExpanded = !isExpanded;
+              });
+            },
+            children: this.books.map((aBook) => getBookPanel(aBook)).toList());
+        return panel;
+      } */
 
   Widget getBookPanel(Book aBook) {
     return ExpansionTile(
@@ -142,14 +199,19 @@ class _MyHomePageState extends State<MyHomePage> {
           style: Theme.of(context).textTheme.display1,
         ),
       ),
-      children: <Widget>[getBookChapterPanels(aBook)],
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: getBookChapterPanels(aBook),
+        )
+      ],
     );
   }
 
   showVerses(Chapter chapter, Book book) {
     setState(() {
-      this.chapter = chapter;
-      this.book = book;
+      appState.currentChapter = chapter.number;
+      appState.currentBook = book;
       this.body = new Verses(
           chapter, book, swipeToNextChapter, true, _longPressRecognizer);
     });
@@ -157,24 +219,28 @@ class _MyHomePageState extends State<MyHomePage> {
 
   swipeToNextChapter(DismissDirection swipeDetails) {
     if (swipeDetails == DismissDirection.endToStart) {
-      if (books.last == book && chapter.number == book.chapters.length) {
+      if (books.last == appState.currentBook &&
+          appState.currentChapter == appState.currentBook.chapters.length) {
         var nextBook = this.books.first;
         showVerses(nextBook.chapters.first, nextBook);
-      } else if (book.chapters.length == chapter.number) {
-        var nextBook = this.books[this.books.indexOf(book) + 1];
+      } else if (appState.currentBook.chapters.length ==
+          appState.currentChapter) {
+        var nextBook = this.books[this.books.indexOf(appState.currentBook) + 1];
         showVerses(nextBook.chapters.first, nextBook);
       } else {
-        showVerses(book.getChapter(chapter.number + 1), book);
+        showVerses(appState.currentBook.getChapter(appState.currentChapter + 1),
+            appState.currentBook);
       }
     } else {
-      if (books.first == book && chapter.number == 1) {
+      if (books.first == appState.currentBook && appState.currentChapter == 1) {
         var nextBook = this.books.last;
         showVerses(nextBook.chapters.last, nextBook);
-      } else if (1 == chapter.number) {
-        var prevBook = this.books[this.books.indexOf(book) - 1];
+      } else if (1 == appState.currentChapter) {
+        var prevBook = this.books[this.books.indexOf(appState.currentBook) - 1];
         showVerses(prevBook.chapters.last, prevBook);
       } else {
-        showVerses(book.getChapter(chapter.number - 1), book);
+        showVerses(appState.currentBook.getChapter(appState.currentChapter - 1),
+            appState.currentBook);
       }
     }
   }
@@ -203,31 +269,6 @@ class _MyHomePageState extends State<MyHomePage> {
           )
           .toList(),
     );
-    /*
-    return GridView.builder(
-        itemBuilder: (BuildContext context, int index) => new ChapterCircle(
-            book: aBook,
-            chapter: aBook.chapters[index],
-            context: context,
-            onTap: openChapter),
-        itemCount: aBook.chapters.length,
-        shrinkWrap: true,
-        padding: EdgeInsets.all(8.0),
-        gridDelegate:
-            new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5));
-     return Column(
-      children: this.getBookChapterColumns(aBook),
-    ); */
-
-    /* aBook.chapters
-                .map(
-                  (chap) => ChapterCircle(
-                      book: aBook,
-                      chapter: chap,
-                      context: context,
-                      onTap: openChapter),
-                )
-                .toList(), */
   }
 
   List<Row> getBookChapterColumns(Book aBook) {
@@ -253,6 +294,27 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return rows;
   }
+
+  Future<File> saveCurrentBookAndChapter() async {
+    final file = await _stateFile;
+
+    // Write the file
+    return file.writeAsString(json.encode(appState));
+  }
+
+  Future<String> readCurrentBookAndChapter() async {
+    try {
+      final file = await _stateFile;
+
+      // Read the file
+      String contents = await file.readAsString();
+
+      return contents;
+    } catch (e) {
+      // If we encounter an error, return 0
+      return "";
+    }
+  }
 }
 
 class ChapterCircle extends StatelessWidget {
@@ -271,38 +333,16 @@ class ChapterCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new FlatButton(
+    return new RaisedButton(
       child: Text(
         chapter.number.toString(),
         style: Theme.of(context).textTheme.display1,
       ),
       onPressed: () => onTap(chapter, book),
       shape: CircleBorder(),
-      padding: EdgeInsets.all(10.0),
+      padding: EdgeInsets.all(8.0),
+      elevation: 0.0,
     );
-/*
-    return new GestureDetector(
-      onTap: () => onTap(chapter, book),
-      child: new Padding(
-        padding: const EdgeInsets.all(6.0),
-        child: new DecoratedBox(
-          decoration: new BoxDecoration(
-              color: Theme.of(context).buttonColor,
-              borderRadius: new BorderRadius.circular(50.0)),
-          child: new FittedBox(
-            alignment: Alignment.center,
-            child: new Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: new Text(
-                chapter.number.toString(),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.button,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );*/
   }
 }
 

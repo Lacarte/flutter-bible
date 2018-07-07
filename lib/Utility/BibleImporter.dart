@@ -10,7 +10,7 @@ import 'package:path_provider/path_provider.dart';
 class BibleImporter {
   xml.XmlDocument xmlDocument;
 
-  BibleImporter(String xmlFile)  {
+  BibleImporter(String xmlFile) {
     //var file = new File(filePath);
     //var xmlFile = filePath;
     xmlDocument = xml.parse(xmlFile);
@@ -54,29 +54,29 @@ class BibleImporter {
     return book;
   }
 
-  Book getBook(String name){
+  Book getBook(String name) {
     var xmlBooks = xmlDocument.findAllElements("b");
     var xmlBook = xmlBooks.firstWhere((n) => n.getAttribute("n") == name);
     var book = convertBookFromXml(xmlBook);
     return book;
-  } 
+  }
 
   Chapter getChapter(String bookName, int chapterNumber) {
     return this.getBook(bookName).chapters[chapterNumber - 1];
   }
-      
- List<Chapter> getChapters(xml.XmlElement xmlBook) {
-   var xmlChapters = xmlBook.findAllElements("c");
-   List<Chapter> chapters = new List<Chapter>();
-   for (var item in xmlChapters) {
-     var chapter = new Chapter();
-     chapter.number = int.parse(item.getAttribute("n"));
-     chapter.verses = this.getVerses(item);
-     chapters.add(chapter);
+
+  List<Chapter> getChapters(xml.XmlElement xmlBook) {
+    var xmlChapters = xmlBook.findAllElements("c");
+    List<Chapter> chapters = new List<Chapter>();
+    for (var item in xmlChapters) {
+      var chapter = new Chapter();
+      chapter.number = int.parse(item.getAttribute("n"));
+      chapter.verses = this.getVerses(item);
+      chapters.add(chapter);
     }
     return chapters;
   }
-     
+
   List<Verse> getVerses(xml.XmlElement xmlChapter) {
     var xmlVerses = xmlChapter.findAllElements("v");
     List<Verse> verses = new List<Verse>();
@@ -84,11 +84,8 @@ class BibleImporter {
       var verse = new Verse();
       verse.number = int.parse(item.getAttribute("n"));
       verse.text = item.text;
-      verses.add(verse);    
+      verses.add(verse);
     }
     return verses;
   }
-
-  
- 
 }
