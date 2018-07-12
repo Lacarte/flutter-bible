@@ -1,17 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:bible_app/Model/AppState.dart';
 import 'package:bible_app/Model/Chapter.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:bible_app/Utility/BibleImporter.dart';
-import 'package:flutter/services.dart' show HapticFeedback, rootBundle;
+import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:bible_app/Model/Book.dart';
 import 'package:bible_app/Designs/Designs.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(new MyApp());
 
@@ -50,6 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget body;
   LongPressGestureRecognizer _longPressRecognizer;
   AppState appState = new AppState();
+  final String membershipKey = 'david.anderson.bibleapp';
 
   Future<String> getFileData(String path) {
     try {
@@ -58,17 +58,6 @@ class _MyHomePageState extends State<MyHomePage> {
     } catch (e) {
       return Future.value("");
     }
-  }
-
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-
-    return directory.path;
-  }
-
-  Future<File> get _stateFile async {
-    final path = await _localPath;
-    return File('$path/state.json');
   }
 
   @override
@@ -82,34 +71,16 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    var importer;
+    //var  books;C:\Dev\flutter\apps\bible_app\lib\Resources\ESV.xml
+
     setState(() {
-      _longPressRecognizer = new LongPressGestureRecognizer()
-        ..onLongPress = _handlePress;
-      var importer;
-      //var  books;C:\Dev\flutter\apps\bible_app\lib\Resources\ESV.xml
       getFileData('resources/esv.xml').then((String value) {
         importer = new BibleImporter(value);
 
         this.books = importer.getAllBooks().toList();
         try {
-          readCurrentBookAndChapter().then((String value) {
-            Map stateMap = json.decode(value);
-            appState = new AppState.fromJson(stateMap);
-            setState(() {
-              if (appState.currentBook == null) {
-                appState.currentBook = this.books.first;
-                appState.currentChapter = 1;
-              }
-              var currentBook = this.books.firstWhere(
-                  (b) => b.name == appState.currentBook.name,
-                  orElse: () => this.books.first);
-
-              showVerses(
-                  currentBook.getChapter(appState.currentChapter), currentBook);
-            });
-          });
-        } catch (e) {
-          setState(() {
+          readCurrentBookAndChapter().then((AppState appState) {
             if (appState.currentBook == null) {
               appState.currentBook = this.books.first;
               appState.currentChapter = 1;
@@ -121,30 +92,24 @@ class _MyHomePageState extends State<MyHomePage> {
             showVerses(
                 currentBook.getChapter(appState.currentChapter), currentBook);
           });
+        } catch (e) {
+          if (appState.currentBook == null) {
+            appState.currentBook = this.books.first;
+            appState.currentChapter = 1;
+          }
+          var currentBook = this.books.firstWhere(
+              (b) => b.name == appState.currentBook.name,
+              orElse: () => this.books.first);
+
+          showVerses(
+              currentBook.getChapter(appState.currentChapter), currentBook);
         }
       });
-
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-
-      //String data = getFileData("ESV.xml") as String;
-      //var importer = new BibleImporter(data);
-      //var books = importer.getAllBooks();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    //var importedBooks = importer.getAllBooks();
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return new Scaffold(
       appBar: new AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -173,21 +138,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-
-  void expandBook(int index, bool isExpanded) {}
-
-  /*  Widget getBookList() {
-        var panel = new ExpansionPanelList(
-            animationDuration: new Duration(seconds: 1),
-            expansionCallback: (int index, bool isExpanded) {
-              //TODO: make books expand on click anywhere on listing
-              setState(() {
-                this.books[index].isExpanded = !isExpanded;
-              });
-            },
-            children: this.books.map((aBook) => getBookPanel(aBook)).toList());
-        return panel;
-      } */
 
   Widget getBookPanel(Book aBook) {
     return ExpansionTile(
@@ -251,10 +201,6 @@ class _MyHomePageState extends State<MyHomePage> {
     showVerses(chapter, book);
   }
 
-  void _handlePress() {
-    HapticFeedback.vibrate();
-  }
-
   Widget getBookChapterPanels(Book aBook) {
     return Wrap(
       spacing: -25.0,
@@ -295,24 +241,21 @@ class _MyHomePageState extends State<MyHomePage> {
     return rows;
   }
 
-  Future<File> saveCurrentBookAndChapter() async {
-    final file = await _stateFile;
-
-    // Write the file
-    return file.writeAsString(json.encode(appState));
+  void saveCurrentBookAndChapter() async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    sp.setString(membershipKey, json.encode(this.appState));
   }
 
-  Future<String> readCurrentBookAndChapter() async {
+  Future<AppState> readCurrentBookAndChapter() async {
     try {
-      final file = await _stateFile;
+      SharedPreferences sp = await SharedPreferences.getInstance();
 
-      // Read the file
-      String contents = await file.readAsString();
+      var loadedAppState =
+          new AppState.fromJson(json.decode(sp.getString(membershipKey)));
 
-      return contents;
+      return loadedAppState;
     } catch (e) {
-      // If we encounter an error, return 0
-      return "";
+      return new AppState();
     }
   }
 }

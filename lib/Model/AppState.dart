@@ -18,6 +18,7 @@ class AppState extends Object with _$AppStateSerializerMixin {
   bool isValid() {
     return currentBook != null &&
         currentChapter > 0 &&
-        currentBook.name != null;
+        currentBook.name != null &&
+        currentBook.name != "";
   }
 }

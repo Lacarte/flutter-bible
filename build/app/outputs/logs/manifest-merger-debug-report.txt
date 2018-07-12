@@ -4,6 +4,7 @@ ADDED from C:\Dev\flutter\apps\bible_app\android\app\src\main\AndroidManifest.xm
 INJECTED from C:\Dev\flutter\apps\bible_app\android\app\src\main\AndroidManifest.xml:1:1-39:12
 INJECTED from C:\Dev\flutter\apps\bible_app\android\app\src\main\AndroidManifest.xml:1:1-39:12
 INJECTED from C:\Dev\flutter\apps\bible_app\android\app\src\main\AndroidManifest.xml:1:1-39:12
+MERGED from [:shared_preferences] C:\Dev\flutter\apps\bible_app\build\shared_preferences\intermediates\manifests\full\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:path_provider] C:\Dev\flutter\apps\bible_app\build\path_provider\intermediates\manifests\full\debug\AndroidManifest.xml:2:1-7:12
 INJECTED from C:\Dev\flutter\apps\bible_app\android\app\src\main\AndroidManifest.xml:1:1-39:12
 INJECTED from C:\Dev\flutter\apps\bible_app\android\app\src\main\AndroidManifest.xml:1:1-39:12
@@ -68,6 +69,8 @@ uses-sdk
 INJECTED from C:\Dev\flutter\apps\bible_app\android\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Dev\flutter\apps\bible_app\android\app\src\main\AndroidManifest.xml
 INJECTED from C:\Dev\flutter\apps\bible_app\android\app\src\main\AndroidManifest.xml
+MERGED from [:shared_preferences] C:\Dev\flutter\apps\bible_app\build\shared_preferences\intermediates\manifests\full\debug\AndroidManifest.xml:5:5-44
+MERGED from [:shared_preferences] C:\Dev\flutter\apps\bible_app\build\shared_preferences\intermediates\manifests\full\debug\AndroidManifest.xml:5:5-44
 MERGED from [:path_provider] C:\Dev\flutter\apps\bible_app\build\path_provider\intermediates\manifests\full\debug\AndroidManifest.xml:5:5-44
 MERGED from [:path_provider] C:\Dev\flutter\apps\bible_app\build\path_provider\intermediates\manifests\full\debug\AndroidManifest.xml:5:5-44
 INJECTED from C:\Dev\flutter\apps\bible_app\android\app\src\main\AndroidManifest.xml
