@@ -1,5 +1,5 @@
 #Internal package file, do not edit.
-#Fri Jul 06 22:57:38 EDT 2018
+#Thu Jul 12 16:20:20 EDT 2018
 4.path=vm_snapshot_data
 8.set=ASSET
 6.path=flutter_assets/LICENSE
@@ -8,7 +8,6 @@
 5.baseType=DIRECTORY
 1.base=C\:\\Dev\\flutter\\apps\\bible_app\\build\\app\\intermediates\\assets\\release
 8.path=vm_snapshot_instr
-12.path=flutter_assets/resources/state.json
 3.base=C\:\\Dev\\flutter\\apps\\bible_app\\build\\app\\intermediates\\assets\\release
 4.set=ASSET
 5.base=C\:\\Dev\\flutter\\apps\\bible_app\\build\\app\\intermediates\\assets\\release
@@ -42,14 +41,11 @@
 8.base=C\:\\Dev\\flutter\\apps\\bible_app\\build\\app\\intermediates\\assets\\release
 2.set=DEX
 8.baseType=DIRECTORY
-12.base=C\:\\Dev\\flutter\\apps\\bible_app\\build\\app\\intermediates\\assets\\release
 9.set=NATIVE_RESOURCE
-count=13
-12.baseType=DIRECTORY
+count=12
 4.baseType=DIRECTORY
 5.set=ASSET
 9.baseType=DIRECTORY
 0.path=isolate_snapshot_instr
-12.set=ASSET
 1.set=ASSET
 2.path=classes.dex

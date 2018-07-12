@@ -1,4 +1,4 @@
-#Fri Jul 06 22:57:38 EDT 2018
+#Thu Jul 12 16:20:19 EDT 2018
 base.0=C\:\\Dev\\flutter\\apps\\bible_app\\build\\app\\intermediates\\transforms\\dex\\release\\0
 path.0=classes.dex
 renamed.0=classes.dex
