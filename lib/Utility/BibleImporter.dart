@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:bible_app/Model/Chapter.dart';
-import 'package:bible_app/Model/Verse.dart';
+import 'package:bible_app/Models/Chapter.dart';
+import 'package:bible_app/Models/Verse.dart';
 import 'package:xml/xml.dart' as xml;
-import 'package:bible_app/Model/Book.dart';
+import 'package:bible_app/Models/Book.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
@@ -37,7 +37,7 @@ class BibleImporter {
     }
   }
 
-  List<Book> getAllBooks() {
+  Future<List<Book>> getAllBooks() async {
     var xmlBooks = xmlDocument.findAllElements("b");
     var books = new List<Book>();
     for (var item in xmlBooks) {
